@@ -37,7 +37,11 @@ update msg model =
       {model | messages = message :: model.messages} ! []
 
     ReceiveSocketMessage message ->
-      model ! []
+      let
+        chat_message = {user = "bla", message = message, timestamp = 1}
+      in
+        {model | messages = chat_message :: model.messages} ! []
+
 
     Select room ->
       {model | room = room} ! []
@@ -46,12 +50,11 @@ update msg model =
       {model | messages = message :: model.messages} ! []
 
     SendSocketMessage sock_message ->
-      model ! [WebSocket.send "ws://echo.websocket.org" "SOCKET-SEND"]
+      model ! [WebSocket.send "ws://echo.websocket.org" sock_message]
 
     SignIn user room ->
       {model | user = user, room = room}
         ! [WebSocket.send "ws://echo.websocket.org" "CONNECT"]
-        (modelo, comando)
 
     SignOut ->
       { message = ""
@@ -72,4 +75,4 @@ update msg model =
 -- SUBSCRIPTIONS
 subscriptions : Model -> Sub Msg
 subscriptions model =
-  WebSocket.listen "ws://echo.websocket.org" ReceiveSocket
+  WebSocket.listen "ws://echo.websocket.org" ReceiveSocketMessage

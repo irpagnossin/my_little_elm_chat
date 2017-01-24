@@ -25,9 +25,9 @@ type Msg = None
   | Select String -- Select <room>
   | SignIn String String -- SignIn <user> <room>
   | SignOut
-  | Send Message String -- Send <message> <room>
-  | SendSocket String
-  | Receive Message -- Receive <message>
-  | ReceiveSocket String
+  | SendChatMessage Message String -- Send <message> <room>
+  | SendSocketMessage String
+  | ReceiveChatMessage Message -- Receive <message>
+  | ReceiveSocketMessage String
   | UserIn String -- UserIn <user>
   | UserOut String -- UserOut <user>
