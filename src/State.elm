@@ -48,11 +48,15 @@ update msg model =
       {model | room = room} ! []
 
     SendChatMessage message ->
-      {model | message = ""} ! [send_message model.server model.user model.room message.message]
+      {model | message = ""}
+        ! [send_message model.server model.user model.room message.message]
 
     SignIn user room ->
-      {model | room = room, user = user, screen = ChatScreen}
-        ! [sign_in model.server user room]
+      if (user == "") || (room == "") then
+        model ! []
+      else
+        {model | room = room, user = user, screen = ChatScreen, users = user :: model.users}
+          ! [sign_in model.server user room]
 
     SignOut ->
       { message = ""
@@ -70,11 +74,12 @@ update msg model =
         new_model = {model | users = username :: model.users}
         new_message = {user = "chat", message = username ++ " entrou na sala", timestamp = 1}
       in
-        new_model ! [Task.perform identity (Task.succeed (ReceiveChatMessage new_message)) ]
+        new_model
+        ! [ Task.perform identity <| Task.succeed <| ReceiveChatMessage new_message ]
 
     UserOut username ->
-      {model | users = List.filter ((/=) username) model.users}
-        ! []
+      { model | users = List.filter ((/=) username) model.users}
+      ! []
 
 
 -- SUBSCRIPTIONS

@@ -43,11 +43,12 @@ chatView model =
           , div [class "messages-area"] [viewMessages model]
           ]
     , div [ class "message-area" ]
-          [ input [onInput InputMessage, value model.message] [] ]
+          [ textarea [onInput InputMessage, value model.message] []
+          , button [onClick (SendChatMessage {user=model.user, message=model.message, timestamp=1})] [text "Send"]
+          ]
     , div [ class "control-area"]
           [ button [onClick Exit] [text "Exit"]
-          , button [onClick Clear] [text "Clear"]
-          , button [onClick (SendChatMessage {user=model.user, message=model.message, timestamp=1})] [text "Send"]
+          , button [onClick Clear] [text "Clear"]          
           ]
     ]
 
@@ -73,4 +74,4 @@ viewOption opt =
 
 viewOptions : List String -> List (Html Msg)
 viewOptions opts =
-  List.map viewOption opts
+  option [] [] :: (List.map viewOption opts)
