@@ -6,6 +6,8 @@ type alias Model =
   , messages : List Message
   , room : String
   , rooms : List String
+  , screen : Screen
+  , server : String
   , user : String
   , users : List String
   }
@@ -22,12 +24,14 @@ type Msg = None
   | Exit
   | InputMessage String
   | InputUser String
-  | Select String -- Select <room>
+  | SelectRoom String -- Select <room>
   | SignIn String String -- SignIn <user> <room>
   | SignOut
-  | SendChatMessage Message String -- Send <message> <room>
-  | SendSocketMessage String
+  | SendChatMessage Message -- Send <message> <room>
   | ReceiveChatMessage Message -- Receive <message>
-  | ReceiveSocketMessage String
-  | UserIn String -- UserIn <user>
-  | UserOut String -- UserOut <user>
+  | UserIn String -- UserIn <username>
+  | UserOut String -- UserOut <username>
+
+type Screen
+  = ChatScreen
+  | LoginScreen

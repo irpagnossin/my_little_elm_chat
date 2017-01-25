@@ -3,19 +3,74 @@ module View exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Socket exposing (..)
+import Socket exposing (sign_in)
 import State exposing (..)
 import Types exposing (..)
 
 root : Model -> Html Msg
 root model =
+  case model.screen of
+    LoginScreen ->
+      loginView model
+
+    ChatScreen ->
+      chatView model
+
+  --div []
+    --[ div [] (List.map viewMessage (List.map (.message) model.messages))
+    --, select [] (viewOptions model.rooms)
+    --, input [onInput InputUser, value model.user] []
+    --, input [onInput InputMessage, value model.message] []
+    --, button [onClick (SignIn model.user model.room)] [text "Sign-in"]
+    --, button [onClick (SendChatMessage {user=model.user, message=model.message, timestamp=1})] [text "Send"]
+    --, button [onClick Exit] [text "Exit"]
+    --, button [onClick Clear] [text "Clear"]
+    --]
+
+loginView : Model -> Html Msg
+loginView model =
   div []
-    [ div [] (List.map viewMessage (List.map (.message) model.messages))
-    , input [onInput InputUser] []
-    , button [onClick (SendSocketMessage (connect model.user model.room))] [text "Send"]
+    [ select [] (viewOptions model.rooms)
+    , input [onInput InputUser, value model.user] []
+    , button [onClick (SignIn model.user model.room)] [text "Sign-in"]
     ]
 
+chatView : Model -> Html Msg
+chatView model =
+  div [class "container"]
+    [ div []
+          [ div [class "users-area"] [viewUsers model]
+          , div [class "messages-area"] [viewMessages model]
+          ]
+    , div [ class "message-area" ]
+          [ input [onInput InputMessage, value model.message] [] ]
+    , div [ class "control-area"]
+          [ button [onClick Exit] [text "Exit"]
+          , button [onClick Clear] [text "Clear"]
+          , button [onClick (SendChatMessage {user=model.user, message=model.message, timestamp=1})] [text "Send"]
+          ]
+    ]
+
+viewUser : String -> Html msg
+viewUser username =
+  li [] [text username]
+
+viewUsers : Model -> Html Msg
+viewUsers model =
+  ul [] <| List.map viewUser model.users
 
 viewMessage : String -> Html msg
 viewMessage msg =
-  div [] [ text msg ]
+  li [] [ text msg ]
+
+viewMessages : Model -> Html Msg
+viewMessages model =
+  ul [] <| List.map viewMessage <| List.map (.message) model.messages -- TODO: remover segundo map
+
+viewOption : String -> Html Msg
+viewOption opt =
+  option [onClick (SelectRoom opt)] [text opt]
+
+viewOptions : List String -> List (Html Msg)
+viewOptions opts =
+  List.map viewOption opts

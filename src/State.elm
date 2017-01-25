@@ -1,18 +1,22 @@
 module State exposing (init, subscriptions, update)
 
+import Socket exposing (receive_message, send_message, sign_in, sign_out)
+import Task
 import Types exposing (..)
 import WebSocket
 
 -- INITIAL STATE
-init : (Model, Cmd Msg)
-init =
+init : String -> Model
+init server =
   { message = ""
   , messages = []
   , room = ""
-  , rooms = ["Sala 1"]
+  , rooms = ["Sala 1", "Sala 2", "Sala 3"]
+  , screen = LoginScreen
+  , server = server
   , user = ""
   , users = []
-  } ! []
+  }
 
 -- UPDATE
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -25,7 +29,11 @@ update msg model =
       {model | message = ""} ! []
 
     Exit ->
-      model ! []
+      let
+        username = model.user
+      in
+        (init model.server)
+          ! [sign_out model.server username]
 
     InputMessage msg ->
       {model | message = msg} ! []
@@ -36,43 +44,40 @@ update msg model =
     ReceiveChatMessage message ->
       {model | messages = message :: model.messages} ! []
 
-    ReceiveSocketMessage message ->
-      let
-        chat_message = {user = "bla", message = message, timestamp = 1}
-      in
-        {model | messages = chat_message :: model.messages} ! []
-
-
-    Select room ->
+    SelectRoom room ->
       {model | room = room} ! []
 
-    SendChatMessage message room ->
-      {model | messages = message :: model.messages} ! []
-
-    SendSocketMessage sock_message ->
-      model ! [WebSocket.send "ws://echo.websocket.org" sock_message]
+    SendChatMessage message ->
+      {model | message = ""} ! [send_message model.server model.user model.room message.message]
 
     SignIn user room ->
-      {model | user = user, room = room}
-        ! [WebSocket.send "ws://echo.websocket.org" "CONNECT"]
+      {model | room = room, user = user, screen = ChatScreen}
+        ! [sign_in model.server user room]
 
     SignOut ->
       { message = ""
       , messages = []
       , room = ""
       , rooms = model.rooms
+      , screen = LoginScreen
+      , server = model.server
       , user = model.user
       , users = []
-      } ! [WebSocket.send "ws://echo.websocket.org" "SIGN-OUT"]
+      } ! [sign_out model.server model.user]
 
     UserIn username ->
-      {model | users = username :: model.users} ! []
+      let
+        new_model = {model | users = username :: model.users}
+        new_message = {user = "chat", message = username ++ " entrou na sala", timestamp = 1}
+      in
+        new_model ! [Task.perform identity (Task.succeed (ReceiveChatMessage new_message)) ]
 
     UserOut username ->
-      {model | users = List.filter ((/=) username) model.users} ! []
+      {model | users = List.filter ((/=) username) model.users}
+        ! []
 
 
 -- SUBSCRIPTIONS
 subscriptions : Model -> Sub Msg
 subscriptions model =
-  WebSocket.listen "ws://echo.websocket.org" ReceiveSocketMessage
+  WebSocket.listen model.server receive_message
