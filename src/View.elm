@@ -7,71 +7,73 @@ import Socket exposing (sign_in)
 import State exposing (..)
 import Types exposing (..)
 
+
 root : Model -> Html Msg
 root model =
-  case model.screen of
-    LoginScreen ->
-      loginView model
+    case model.screen of
+        LoginScreen ->
+            loginView model
 
-    ChatScreen ->
-      chatView model
+        ChatScreen ->
+            chatView model
 
-  --div []
-    --[ div [] (List.map viewMessage (List.map (.message) model.messages))
-    --, select [] (viewOptions model.rooms)
-    --, input [onInput InputUser, value model.user] []
-    --, input [onInput InputMessage, value model.message] []
-    --, button [onClick (SignIn model.user model.room)] [text "Sign-in"]
-    --, button [onClick (SendChatMessage {user=model.user, message=model.message, timestamp=1})] [text "Send"]
-    --, button [onClick Exit] [text "Exit"]
-    --, button [onClick Clear] [text "Clear"]
-    --]
 
 loginView : Model -> Html Msg
 loginView model =
-  div []
-    [ select [] (viewOptions model.rooms)
-    , input [onInput InputUser, value model.user] []
-    , button [onClick (SignIn model.user model.room)] [text "Sign-in"]
-    ]
+    div []
+        [ select [] (viewOptions model.rooms)
+        , input [ onInput InputUser, value model.user ] []
+        , button [ onClick (SignIn model.user model.room) ] [ text "Sign-in" ]
+        ]
+
 
 chatView : Model -> Html Msg
 chatView model =
-  div [class "container"]
-    [ div []
-          [ div [class "users-area"] [viewUsers model]
-          , div [class "messages-area"] [viewMessages model]
-          ]
-    , div [ class "message-area" ]
-          [ textarea [onInput InputMessage, value model.message] []
-          , button [onClick (SendChatMessage {user=model.user, message=model.message, timestamp=1})] [text "Send"]
-          ]
-    , div [ class "control-area"]
-          [ button [onClick Exit] [text "Exit"]
-          , button [onClick Clear] [text "Clear"]          
-          ]
-    ]
+    div [ class "container" ]
+        [ div []
+            [ div [ class "users-area" ] [ viewUsers model ]
+            , div [ class "messages-area" ] [ viewMessages model ]
+            ]
+        , div [ class "message-area" ]
+            [ textarea [ onInput InputMessage, value model.message ] []
+            , button [ onClick (SendChatMessage { user = model.user, message = model.message, timestamp = 1 }) ] [ text "Send" ]
+            ]
+        , div [ class "control-area" ]
+            [ button [ onClick Exit ] [ text "Exit" ]
+            , button [ onClick Clear ] [ text "Clear" ]
+            ]
+        ]
+
 
 viewUser : String -> Html msg
 viewUser username =
-  li [] [text username]
+    li [] [ text username ]
+
 
 viewUsers : Model -> Html Msg
 viewUsers model =
-  ul [] <| List.map viewUser model.users
+    ul [] <| List.map viewUser model.users
+
 
 viewMessage : String -> Html msg
 viewMessage msg =
-  li [] [ text msg ]
+    li [] [ text msg ]
+
+
+
+-- TODO: remover segundo map
+
 
 viewMessages : Model -> Html Msg
 viewMessages model =
-  ul [] <| List.map viewMessage <| List.map (.message) model.messages -- TODO: remover segundo map
+    ul [] <| List.map viewMessage <| List.map (.message) model.messages
+
 
 viewOption : String -> Html Msg
 viewOption opt =
-  option [onClick (SelectRoom opt)] [text opt]
+    option [ onClick (SelectRoom opt) ] [ text opt ]
+
 
 viewOptions : List String -> List (Html Msg)
 viewOptions opts =
-  option [] [] :: (List.map viewOption opts)
+    option [] [] :: (List.map viewOption opts)
