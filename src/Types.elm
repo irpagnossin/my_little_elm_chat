@@ -3,7 +3,7 @@ module Types exposing (..)
 -- MODEL
 type alias Model =
   { message : String
-  , messages : List Message
+  , messages : List SocketMessage
   , room : String
   , rooms : List String
   , screen : Screen
@@ -12,10 +12,11 @@ type alias Model =
   , users : List String
   }
 
-type alias Message =
-  { user : String
+type alias SocketMessage =
+  { action : String
   , message : String
-  , timestamp : Int
+  , room : String
+  , user : String
   }
 
 -- MESSAGES
@@ -27,8 +28,8 @@ type Msg = None
   | SelectRoom String -- Select <room>
   | SignIn String String -- SignIn <user> <room>
   | SignOut
-  | SendChatMessage Message -- Send <message> <room>
-  | ReceiveChatMessage Message -- Receive <message>
+  | SendChatMessage String -- Send <message> <room>
+  | ReceiveChatMessage SocketMessage -- Receive <message>
   | UserIn String -- UserIn <username>
   | UserOut String -- UserOut <username>
 

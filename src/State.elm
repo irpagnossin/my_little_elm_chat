@@ -1,9 +1,9 @@
 module State exposing (init, subscriptions, update)
 
-import Socket exposing (receive_message, send_message, sign_in, sign_out)
+import Socket exposing (encodeSocketMessage, receive_message, sign_out)
 import Task
 import Types exposing (..)
-import WebSocket
+import WebSocket exposing (listen, send)
 
 
 -- INITIAL STATE
@@ -56,48 +56,54 @@ update msg model =
             { model | room = room } ! []
 
         SendChatMessage message ->
-            { model | message = "" }
-                ! [ send_message model.server model.user model.room message.message ]
+            let
+              socket_message = encodeSocketMessage
+                <| SocketMessage "USER_SAYS" message model.room model.user
+            in
+              { model | message = "" }
+                ! [ WebSocket.send model.server socket_message ]
+
 
         SignIn user room ->
             if (user == "") || (room == "") then
                 model ! []
             else
+              let
+                socket_message =
+                  encodeSocketMessage <| SocketMessage "SIGN-IN" "" model.room model.user
+              in
                 { model | room = room, user = user, screen = ChatScreen, users = user :: model.users }
-                    ! [ sign_in model.server user room ]
+                  ! [ send model.server socket_message ]
 
+        -- User has asked to leave
         SignOut ->
-            { message = ""
-            , messages = []
-            , room = ""
-            , rooms = model.rooms
-            , screen = LoginScreen
-            , server = model.server
-            , user = model.user
-            , users = []
-            }
-                ! [ sign_out model.server model.user ]
+          let
+            socket_message =
+              encodeSocketMessage <| SocketMessage "SIGN_OUT" "" model.room model.user
+          in
+            init model.server ! [ send model.server socket_message ]
 
+        -- A new user has arrived
         UserIn username ->
-            let
-                new_model =
-                    { model | users = username :: model.users }
+          let
+            socket_message =
+              SocketMessage "" "cheguei! :D" model.room username
+          in
+            { model
+            | users = username :: model.users
+            , messages = socket_message :: model.messages
+            } ! []
 
-                new_message =
-                    { user = "chat", message = username ++ " entrou na sala", timestamp = 1 }
-            in
-                new_model
-                    ! [ Task.perform identity <| Task.succeed <| ReceiveChatMessage new_message ]
-
+        -- A user has left
         UserOut username ->
-            { model | users = List.filter ((/=) username) model.users }
-                ! []
+          { model
+          | users = List.filter ((/=) username) model.users
+          } ! []
 
 
 
 -- SUBSCRIPTIONS
 
-
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    WebSocket.listen model.server receive_message
+    listen model.server receive_message

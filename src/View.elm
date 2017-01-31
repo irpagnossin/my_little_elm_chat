@@ -3,7 +3,6 @@ module View exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Socket exposing (sign_in)
 import State exposing (..)
 import Types exposing (..)
 
@@ -36,7 +35,7 @@ chatView model =
             ]
         , div [ class "message-area" ]
             [ textarea [ onInput InputMessage, value model.message ] []
-            , button [ onClick (SendChatMessage { user = model.user, message = model.message, timestamp = 1 }) ] [ text "Send" ]
+            , button [ onClick (SendChatMessage model.message) ] [ text "Send" ]
             ]
         , div [ class "control-area" ]
             [ button [ onClick Exit ] [ text "Exit" ]

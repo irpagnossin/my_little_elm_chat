@@ -1,16 +1,46 @@
-module Socket exposing (receive_message, send_message, sign_in, sign_out)
+module Socket exposing
+  ( encodeSocketMessage
+  , receive_message
+  , sign_out
+  )
 
+import Json.Decode exposing (decodeString, string, Decoder)
+import Json.Decode.Pipeline exposing (decode, required)
+import Json.Encode exposing (encode, object)
 import Types exposing (..)
 import WebSocket
 
+
+
+-- Encode messages to send them to websocket server
+encodeSocketMessage : SocketMessage -> String
+encodeSocketMessage {action, message, room, user} =
+  encode 0 <|
+    object
+      [ ("action", Json.Encode.string action)
+      , ("message", Json.Encode.string message)
+      , ("room", Json.Encode.string room)
+      , ("user", Json.Encode.string user)
+      ]
+
+
+-- Decode messages from websocket server
+socketMessageDecoder : Decoder SocketMessage
+socketMessageDecoder =
+  decode SocketMessage
+    |> required "action" string
+    |> required "message" string-- (nullable string)
+    |> required "room" string-- (nullable string)
+    |> required "user" string
+
+
 receive_message : String -> Msg
 receive_message message =
-  ReceiveChatMessage {user = "bla", message = message, timestamp = 1}
-  -- TODO PROCESSAMENTO DE MENSAGEM VEM AQUI
+  case decodeString socketMessageDecoder message of
+    Ok msg -> ReceiveChatMessage msg
+      -- TODO: processamento das mensagens
+    Err error -> None
 
-send_message : String -> String -> String -> String -> Cmd Msg
-send_message server user room message =
-  WebSocket.send server ("MESSAGE/" ++ user ++ "/" ++ room ++ "/" ++ message)
 
 sign_in : String -> String -> String -> Cmd Msg
 sign_in server user room =
