@@ -1,6 +1,7 @@
 module State exposing (init, subscriptions, update)
 
-import Socket exposing (encodeSocketMessage, receive_message, sign_out)
+import Socket exposing (encodeSocketMessage, receive_message)
+import String exposing (isEmpty)
 import Task
 import Types exposing (..)
 import WebSocket exposing (listen, send)
@@ -29,80 +30,85 @@ init server =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        -- Nothing to do
         None ->
             model ! []
 
+        -- User cleared his message
         Clear ->
             { model | message = "" } ! []
 
+        -- User exited the chat room
         Exit ->
-            let
-                username =
-                    model.user
-            in
-                (init model.server)
-                    ! [ sign_out model.server username ]
+            init model.server
+                ! [ SocketMessage "SIGN_OUT" "" model.room model.user
+                        |> encodeSocketMessage
+                        |> send model.server
+                  ]
 
+        -- User inputs message
         InputMessage msg ->
             { model | message = msg } ! []
 
+        -- User inputs username
         InputUser usr ->
             { model | user = usr } ! []
 
+        -- Server informs a new message was sent
         ReceiveChatMessage message ->
             { model | messages = message :: model.messages } ! []
 
+        -- User selected a chat room
         SelectRoom room ->
             { model | room = room } ! []
 
+        -- User said something to everybody inside the chat room
         SendChatMessage message ->
-            let
-              socket_message = encodeSocketMessage
-                <| SocketMessage "USER_SAYS" message model.room model.user
-            in
-              { model | message = "" }
-                ! [ WebSocket.send model.server socket_message ]
+            { model | message = "" }
+                ! [ SocketMessage "USER_SAYS" message model.room model.user
+                        |> encodeSocketMessage
+                        |> send model.server
+                  ]
 
-
+        -- User signs in
         SignIn user room ->
-            if (user == "") || (room == "") then
+            if isEmpty user || isEmpty room then
                 model ! []
             else
-              let
-                socket_message =
-                  encodeSocketMessage <| SocketMessage "SIGN-IN" "" model.room model.user
-              in
-                { model | room = room, user = user, screen = ChatScreen, users = user :: model.users }
-                  ! [ send model.server socket_message ]
+                { model
+                    | room = room
+                    , user = user
+                    , screen = ChatScreen
+                    , users = user :: model.users
+                }
+                    ! [ SocketMessage "SIGN-IN" "" model.room model.user
+                            |> encodeSocketMessage
+                            |> send model.server
+                      ]
 
-        -- User has asked to leave
-        SignOut ->
-          let
-            socket_message =
-              encodeSocketMessage <| SocketMessage "SIGN_OUT" "" model.room model.user
-          in
-            init model.server ! [ send model.server socket_message ]
-
-        -- A new user has arrived
+        -- Server informs a new user has arrived
         UserIn username ->
-          let
-            socket_message =
-              SocketMessage "" "cheguei! :D" model.room username
-          in
-            { model
-            | users = username :: model.users
-            , messages = socket_message :: model.messages
-            } ! []
+            let
+                socket_message =
+                    SocketMessage "" "cheguei! :D" model.room username
+            in
+                { model
+                    | users = username :: model.users
+                    , messages = socket_message :: model.messages
+                }
+                    ! []
 
-        -- A user has left
+        -- Server informs a user has left
         UserOut username ->
-          { model
-          | users = List.filter ((/=) username) model.users
-          } ! []
+            { model
+                | users = List.filter ((/=) username) model.users
+            }
+                ! []
 
 
 
 -- SUBSCRIPTIONS
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =

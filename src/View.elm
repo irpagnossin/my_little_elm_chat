@@ -54,18 +54,25 @@ viewUsers model =
     ul [] <| List.map viewUser model.users
 
 
-viewMessage : String -> Html msg
-viewMessage msg =
-    li [] [ text msg ]
-
-
 
 -- TODO: remover segundo map
 
 
 viewMessages : Model -> Html Msg
 viewMessages model =
-    ul [] <| List.map viewMessage <| List.map (.message) model.messages
+    ul [] <| List.map format_message (List.filter (\x -> x.action == "USER_SAYS") model.messages)
+
+
+format_message : SocketMessage -> Html Msg
+format_message { action, message, room, user } =
+    li []
+        [ b [] [ text (user ++ " disse: ") ]
+        , text message
+        ]
+
+
+
+--user ++ " disse: " ++ message
 
 
 viewOption : String -> Html Msg
