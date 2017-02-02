@@ -42,7 +42,10 @@ receive_message : String -> Msg
 receive_message message =
     case decodeString socketMessageDecoder message of
         Ok msg ->
-            ReceiveChatMessage msg
+            if msg.action == "USER_IN" then
+                UserIn msg.user
+            else
+                ReceiveChatMessage msg
 
         -- TODO: processamento das mensagens
         Err error ->

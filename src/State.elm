@@ -79,9 +79,11 @@ update msg model =
                     | room = room
                     , user = user
                     , screen = ChatScreen
-                    , users = user :: model.users
                 }
-                    ! [ SocketMessage "SIGN-IN" "" model.room model.user
+                    ! [ SocketMessage "SIGN_IN" "" model.room model.user
+                            |> encodeSocketMessage
+                            |> send model.server
+                      , SocketMessage "REQUEST_USERS" "" model.room model.user
                             |> encodeSocketMessage
                             |> send model.server
                       ]
