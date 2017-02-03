@@ -32,7 +32,7 @@ encodeSocketMessage { action, message, room, user } =
 socketMessageDecoder : Decoder SocketMessage
 socketMessageDecoder =
     decode SocketMessage
-        |> required "action" string
+        {- TODO: union type -} |> required "action" string
         |> required "message" string
         |> required "room" string
         |> required "user" string
@@ -44,6 +44,8 @@ receive_message message =
         Ok msg ->
             if msg.action == "USER_IN" then
                 UserIn msg.user
+            else if msg.action == "ALL_USERS" then
+                SetUsers <| String.split "," msg.message
             else
                 ReceiveChatMessage msg
 

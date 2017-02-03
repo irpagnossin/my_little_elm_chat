@@ -34,6 +34,7 @@ type Msg
     | InputMessage String
     | InputUser String
     | SelectRoom String
+    | SetUsers (List String)
     | SignIn String String
     | SendChatMessage String
     | ReceiveChatMessage SocketMessage

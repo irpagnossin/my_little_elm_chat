@@ -70,6 +70,9 @@ update msg model =
                         |> send model.server
                   ]
 
+        SetUsers users ->
+            { model | users = users } ! []
+
         -- User signs in
         SignIn user room ->
             if isEmpty user || isEmpty room then
@@ -80,10 +83,10 @@ update msg model =
                     , user = user
                     , screen = ChatScreen
                 }
-                    ! [ SocketMessage "SIGN_IN" "" model.room model.user
+                    ! [ SocketMessage "REQUEST_USERS" "" model.room model.user
                             |> encodeSocketMessage
                             |> send model.server
-                      , SocketMessage "REQUEST_USERS" "" model.room model.user
+                      , SocketMessage "SIGN_IN" "" model.room model.user
                             |> encodeSocketMessage
                             |> send model.server
                       ]
