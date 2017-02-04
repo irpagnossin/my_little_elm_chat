@@ -1,0 +1,21 @@
+<!DOCTYPE HTML>
+<html>
+
+  <head>
+    <meta charset="UTF-8">
+    <title>My little Elm chat client</title>
+    <script type="text/javascript" src="chat.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="style.css">
+  </head>
+
+  <body>
+  	<div id="main"></div>
+  </body>
+
+  <script type="text/javascript">
+  	var node = document.getElementById("main");
+  	var app = Elm.App.embed(node);
+  </script>
+
+</html>

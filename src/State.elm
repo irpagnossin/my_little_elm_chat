@@ -12,7 +12,8 @@ import WebSocket exposing (listen, send)
 
 init : String -> Model
 init server =
-    { message = ""
+    { connected = False
+    , message = ""
     , messages = []
     , room = ""
     , rooms = [ "Sala 1", "Sala 2", "Sala 3" ]
@@ -80,7 +81,8 @@ update msg model =
                 model ! []
             else
                 { model
-                    | room = room
+                    | connected = True
+                    , room = room
                     , user = user
                     , screen = ChatScreen
                 }
@@ -96,7 +98,7 @@ update msg model =
         UserIn username ->
             let
                 socket_message =
-                    SocketMessage "" "cheguei! :D" model.room username
+                    SocketMessage "USER_SAYS" (username ++ " entrou na sala.") model.room ""
             in
                 { model
                     | users = username :: model.users
@@ -118,4 +120,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    listen model.server receive_message
+    if model.connected then
+        listen model.server receive_message
+    else
+        Sub.none

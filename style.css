@@ -1,0 +1,13 @@
+h1 {
+  text-align: center;
+}
+
+ul {
+  list-style-type: none;
+}
+
+#messages {
+  height: 200px;
+  overflow-y: scroll;
+  margin: 0 0 10px 0;
+}

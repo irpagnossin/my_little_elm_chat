@@ -4,7 +4,8 @@ module Types exposing (..)
 
 
 type alias Model =
-    { message : String
+    { connected : Bool
+    , message : String
     , messages : List SocketMessage
     , room : String
     , rooms : List String
