@@ -46,6 +46,8 @@ receive_message message =
                 UserIn msg.user
             else if msg.action == "ALL_USERS" then
                 SetUsers <| String.split "," msg.message
+            else if msg.action == "USER_OUT" then
+                UserOut msg.user
             else
                 ReceiveChatMessage msg
 

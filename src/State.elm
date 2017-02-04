@@ -70,6 +70,7 @@ update msg model =
                         |> send model.server
                   ]
 
+        -- Server informs all users connected to chat room
         SetUsers users ->
             { model | users = users } ! []
 
