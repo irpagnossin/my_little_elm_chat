@@ -16,7 +16,7 @@ init server =
     , message = ""
     , messages = []
     , room = ""
-    , rooms = [ "Sala 1", "Sala 2", "Sala 3" ]
+    , rooms = [ "1", "2", "3" ]
     , screen = LoginScreen
     , server = server
     , user = ""
@@ -62,6 +62,10 @@ update msg model =
         -- User selected a chat room
         SelectRoom room ->
             { model | room = room } ! []
+
+        -- User selected a chat room
+        SelectRoom2 room ->
+            { model | room = toString (room) } ! []
 
         -- User said something to everybody inside the chat room
         SendChatMessage message ->

@@ -5,12 +5,15 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import State exposing (..)
 import Types exposing (..)
+import Html.Events.Extra exposing (onEnter)
 
 
 chatView : Model -> Html Msg
 chatView model =
     section
-        [ class "container" ]
+        [ class "container"
+        , onEnter <| SendChatMessage model.message
+        ]
         [ div
             []
             [ div

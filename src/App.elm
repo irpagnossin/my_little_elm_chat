@@ -7,7 +7,7 @@ import View
 
 server : String
 server =
-    "ws://localhost:9001"
+    "ws://192.168.1.7:9001"
 
 
 main =

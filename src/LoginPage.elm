@@ -5,6 +5,8 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import State exposing (..)
 import Types exposing (..)
+import Json.Decode as Json
+import Html.Events.Extra exposing (onEnter, targetValueIntParse)
 
 
 loginView : Model -> Html Msg
@@ -12,7 +14,9 @@ loginView model =
     section
         []
         [ div
-            [ class "row" ]
+            [ class "row"
+            , onEnter <| SignIn model.user model.room
+            ]
             [ div
                 [ class "col-md-6 col-md-offset-3" ]
                 [ p
@@ -20,6 +24,7 @@ loginView model =
                     [ text "Escolha a sala:" ]
                 , select
                     [ class "col-md-3"
+                    , onChange
                     ]
                     (viewOptions model.rooms)
                 ]
@@ -48,7 +53,7 @@ loginView model =
 
 viewOption : String -> Html Msg
 viewOption opt =
-    option [ onClick (SelectRoom opt) ] [ text opt ]
+    option [{- onClick (SelectRoom opt) -}] [ text opt ]
 
 
 viewOptions : List String -> List (Html Msg)
@@ -62,3 +67,7 @@ eligibleUser model =
         "btn btn-lg btn-default col-md-offset-3"
     else
         "btn btn-lg btn-primary col-md-offset-3"
+
+
+onChange =
+    on "change" (Json.map SelectRoom2 targetValueIntParse)
