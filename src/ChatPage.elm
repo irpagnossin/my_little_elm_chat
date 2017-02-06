@@ -3,16 +3,17 @@ module ChatPage exposing (chatView)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Html.Events.Extra exposing (onEnter)
+import Json.Decode as Json
 import State exposing (..)
 import Types exposing (..)
-import Html.Events.Extra exposing (onEnter)
 
 
 chatView : Model -> Html Msg
 chatView model =
     section
         [ class "container"
-        , onEnter <| SendChatMessage model.message
+        , onKeyPressed model
         ]
         [ div
             []
@@ -80,3 +81,21 @@ format_message current_user { action, message, room, user } =
             [ b [] [ text (user ++ " disse: ") ]
             , text message
             ]
+
+
+{-| When a relevant key is released, send a Msg.
+    Otherwise, do nothing.
+-}
+onKeyPressed : Model -> Attribute Msg
+onKeyPressed model =
+    on "keyup" <|
+        Json.andThen
+            (\keyCode ->
+                if keyCode == 27 then
+                    Json.succeed <| Clear
+                else if keyCode == 13 then
+                    Json.succeed <| SendChatMessage model.message
+                else
+                    Json.fail (toString keyCode)
+            )
+            keyCode
