@@ -1,7 +1,12 @@
 module Socket
     exposing
         ( encodeSocketMessage
+        , listen
         , receive_message
+        , send_user_message
+        , sign_in
+        , sign_out
+        , request_users
         )
 
 import Json.Decode exposing (decodeString, string, Decoder)
@@ -23,6 +28,11 @@ encodeSocketMessage { action, message, room, user } =
             , ( "room", Json.Encode.string room )
             , ( "user", Json.Encode.string user )
             ]
+
+
+listen : Model -> Sub Msg
+listen model =
+    WebSocket.listen model.server receive_message
 
 
 
@@ -54,3 +64,31 @@ receive_message message =
         -- TODO: processamento das mensagens
         Err error ->
             None
+
+
+request_users : String -> String -> String -> Cmd Msg
+request_users server room user =
+    SocketMessage "REQUEST_USERS" "" room user
+        |> encodeSocketMessage
+        |> WebSocket.send server
+
+
+send_user_message : String -> String -> String -> String -> Cmd Msg
+send_user_message server room user message =
+    SocketMessage "USER_SAYS" message room user
+        |> encodeSocketMessage
+        |> WebSocket.send server
+
+
+sign_in : String -> String -> String -> Cmd Msg
+sign_in server room user =
+    SocketMessage "SIGN_IN" "" room user
+        |> encodeSocketMessage
+        |> WebSocket.send server
+
+
+sign_out : String -> String -> String -> Cmd Msg
+sign_out server room user =
+    SocketMessage "SIGN_OUT" "" room user
+        |> encodeSocketMessage
+        |> WebSocket.send server

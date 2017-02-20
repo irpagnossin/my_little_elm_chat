@@ -1,10 +1,18 @@
 module State exposing (init, subscriptions, update)
 
-import Socket exposing (encodeSocketMessage, receive_message)
+import Socket
+    exposing
+        ( encodeSocketMessage
+        , listen
+        , receive_message
+        , send_user_message
+        , sign_in
+        , sign_out
+        , request_users
+        )
 import String exposing (isEmpty)
 import Task
 import Types exposing (..)
-import WebSocket exposing (listen, send)
 
 
 -- INITIAL STATE
@@ -42,10 +50,7 @@ update msg model =
         -- User exited the chat room
         Exit ->
             init model.server
-                ! [ SocketMessage "SIGN_OUT" "" model.room model.user
-                        |> encodeSocketMessage
-                        |> send model.server
-                  ]
+                ! [ sign_out model.server model.room model.user ]
 
         -- User inputs message
         InputMessage msg ->
@@ -70,10 +75,7 @@ update msg model =
         -- User said something to everybody inside the chat room
         SendChatMessage message ->
             { model | message = "" }
-                ! [ SocketMessage "USER_SAYS" message model.room model.user
-                        |> encodeSocketMessage
-                        |> send model.server
-                  ]
+                ! [ send_user_message model.server model.room model.user message ]
 
         -- Server informs all users connected to chat room
         SetUsers users ->
@@ -90,12 +92,8 @@ update msg model =
                     , user = user
                     , screen = ChatScreen
                 }
-                    ! [ SocketMessage "REQUEST_USERS" "" model.room model.user
-                            |> encodeSocketMessage
-                            |> send model.server
-                      , SocketMessage "SIGN_IN" "" model.room model.user
-                            |> encodeSocketMessage
-                            |> send model.server
+                    ! [ request_users model.server room user
+                      , sign_in model.server room user
                       ]
 
         -- Server informs a new user has arrived
@@ -125,6 +123,6 @@ update msg model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     if model.connected then
-        listen model.server receive_message
+        listen model
     else
         Sub.none
